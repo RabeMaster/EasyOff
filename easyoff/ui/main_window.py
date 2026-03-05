@@ -108,6 +108,11 @@ class MainWindow(QMainWindow):
         if not self._ask_yes_no("예약 확인", msg):
             return
 
+        seconds = TimeUtils.get_seconds_difference(target_qdt)
+        if seconds <= 0:
+            QMessageBox.warning(self, "경고", "예약 시간이 이미 지났습니다.")
+            return
+
         self._process_scheduling(seconds)
 
     def _process_scheduling(self, seconds: int):
