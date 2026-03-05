@@ -3,14 +3,15 @@ import subprocess
 
 
 class ShutdownManager:
+    _NO_WINDOW = subprocess.CREATE_NO_WINDOW
+
     @staticmethod
     def is_scheduled():
         try:
             query = "*[System[(Provider[@Name='User32'] and (EventID=1074 or EventID=1075)) or (Provider[@Name='EventLog'] and EventID=6005) or (Provider[@Name='Microsoft-Windows-Kernel-General'] and EventID=12)]]"
             cmd = ["wevtutil", "qe", "System", f"/q:{query}", "/c:1", "/rd:true", "/f:xml"]
 
-            result = subprocess.run(cmd, capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
-
+            result = subprocess.run(cmd, capture_output=True, text=True, creationflags=ShutdownManager._NO_WINDOW)
             match = re.search(r"<EventID(?:[^>]*)>(\d+)</EventID>", result.stdout)
 
             if match and match.group(1) == "1074":
@@ -24,7 +25,7 @@ class ShutdownManager:
     @staticmethod
     def cancel():
         try:
-            subprocess.run(["shutdown", "-a"], capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+            subprocess.run(["shutdown", "-a"], capture_output=True, creationflags=ShutdownManager._NO_WINDOW)
             return True
         except Exception:
             return False
@@ -44,14 +45,15 @@ class ShutdownManager:
         command.extend(["-t", str(seconds)])
 
         try:
-            result = subprocess.run(command, capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+            result = subprocess.run(command, capture_output=True, creationflags=ShutdownManager._NO_WINDOW)
 
             if result.returncode == 0:
                 return "SUCCESS"
-            elif result.returncode == 1190:
+
+            if result.returncode == 1190:
                 return "ALREADY_SCHEDULED"
-            else:
-                return "ERROR"
+
+            return "ERROR"
 
         except Exception:
             return "ERROR"
