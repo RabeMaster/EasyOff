@@ -44,7 +44,14 @@ class ShutdownManager:
         command.extend(["-t", str(seconds)])
 
         try:
-            subprocess.run(command, capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
-            return True
+            result = subprocess.run(command, capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
+
+            if result.returncode == 0:
+                return "SUCCESS"
+            elif result.returncode == 1190:
+                return "ALREADY_SCHEDULED"
+            else:
+                return "ERROR"
+
         except Exception:
-            return False
+            return "ERROR"
