@@ -86,10 +86,11 @@ class MainWindow(QMainWindow):
             return
 
         msg = "이미 종료 예약이 존재합니다.\n예약을 취소하고 새로 설정하시겠습니까?"
-        if self._ask_yes_no("확인", msg):
-            ShutdownManager.cancel()
-        else:
+        if not self._ask_yes_no("확인", msg):
             QApplication.instance().quit()
+            return
+
+        ShutdownManager.cancel()
 
     def on_schedule_clicked(self):
         target_qdt = self._get_target_datetime()
